@@ -16,25 +16,62 @@ namespace SnakeGame;
 /// </summary>
 public partial class MainWindow : Window
 {
-
+    private readonly Dictionary<GridValue, ImageSource> gridValToImage = new()
+    {
+        { GridValue.Empty, Images.Empty },
+        { GridValue.Food, Images.Food },
+        { GridValue.Snake, Images.SnakeBody }
+    };
 
     private readonly int rows = 15, cols = 15;
     private readonly Image[,] gridImages;
+    private GameState gameState;
 
     public MainWindow()
     {
         InitializeComponent();
         gridImages = SetupGrid();
+        gameState = new GameState(rows, cols);
     }
 
-    private void Window_Loaded(object sender, RoutedEventArgs e)
+    private async void Window_Loaded(object sender, RoutedEventArgs e)
     {
-
+        Draw();
+        await GameLoop();
     }
 
     private void Window_KeyDown(object sender, KeyEventArgs e)
     {
+        if(gameState.GameOver)
+        {
+            return;
+        }
 
+        switch (e.Key)
+        {
+            case Key.A:
+                gameState.ChangeDirection(Direction.Left);
+                break;
+            case Key.D:
+                gameState.ChangeDirection(Direction.Right);
+                break;
+            case Key.W:
+                gameState.ChangeDirection(Direction.Up);
+                break;
+            case Key.S:
+                gameState.ChangeDirection(Direction.Down);
+                break;
+        }
+    }
+
+    private async Task GameLoop()
+    {
+        while (!gameState.GameOver)
+        {
+           await Task.Delay(100); // Adjust speed of the game
+           gameState.Move();
+           Draw();
+        }
     }
 
     private Image[,] SetupGrid()
@@ -58,5 +95,23 @@ public partial class MainWindow : Window
         }
 
         return images;
+    }
+
+    private void Draw()
+    {
+        DrawGrid();
+        ScoreText.Text = $"Score: {gameState.Score}";
+    }
+
+    private void DrawGrid()
+    {
+        for (int r = 0; r < rows; r++)
+        {
+            for (int c = 0; c < cols; c++)
+            {
+                GridValue gridVal = gameState.Grid[r, c];
+                gridImages[r, c].Source = gridValToImage[gridVal];
+            }
+        }
     }
 }
