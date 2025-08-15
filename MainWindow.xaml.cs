@@ -23,6 +23,14 @@ public partial class MainWindow : Window
         { GridValue.Snake, Images.SnakeBody }
     };
 
+    private readonly Dictionary<Direction, int> dirToRotation = new()
+    {
+        {Direction.Up, 0 },
+        {Direction.Right, 90 },
+        {Direction.Down, 180 },
+        {Direction.Left, 270 }
+    };
+
     private readonly int rows = 15, cols = 15;
     private readonly Image[,] gridImages;
     private GameState gameState;
@@ -106,7 +114,8 @@ public partial class MainWindow : Window
             {
                 Image image = new Image
                 {
-                    Source = Images.Empty
+                    Source = Images.Empty,
+                    RenderTransformOrigin = new Point(0.5, 0.5),
                 };
                 images[r, c] = image;
                 GameGrid.Children.Add(image);
@@ -120,6 +129,7 @@ public partial class MainWindow : Window
     private void Draw()
     {
         DrawGrid();
+        DrawSnakeHead();
         ScoreText.Text = $"Score: {gameState.Score}";
     }
 
@@ -131,8 +141,19 @@ public partial class MainWindow : Window
             {
                 GridValue gridVal = gameState.Grid[r, c];
                 gridImages[r, c].Source = gridValToImage[gridVal];
+                gridImages[r, c].RenderTransform = Transform.Identity;
             }
         }
+    }
+
+    private void DrawSnakeHead()
+    {
+        Position headPos = gameState.HeadPosition();
+        Image image = gridImages[headPos.Row, headPos.Column];
+        image.Source = Images.SnakeHead;
+
+        int rotation = dirToRotation[gameState.Direction];
+        image.RenderTransform = new RotateTransform(rotation);
     }
 
     private async Task ShowCountDown()
