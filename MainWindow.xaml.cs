@@ -156,6 +156,18 @@ public partial class MainWindow : Window
         image.RenderTransform = new RotateTransform(rotation);
     }
 
+    private async Task DrawDeadSnake()
+    {
+        List<Position> positions = new List<Position>(gameState.SnakePositions());
+        for (int i=0; i < positions.Count; i++)
+        {
+            Position pos = positions[i];
+            ImageSource source = (i == 0) ? Images.DeadHead : Images.DeadBody;
+            gridImages[pos.Row, pos.Column].Source = source;
+            await Task.Delay(50);
+        }
+    }
+
     private async Task ShowCountDown()
     {
         for (int i = 3; i > 0; i--)
@@ -167,6 +179,7 @@ public partial class MainWindow : Window
 
     private async Task ShowGameOver()
     {
+        await DrawDeadSnake();
         await Task.Delay(1000);
         Overlay.Visibility = Visibility.Visible;
         OverlayText.Text = "PRESS ANY KEY TO START"; 
